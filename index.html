@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dropship Online</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Config Tailwind -->
+    <script src="tailwind-config.js"></script>
+
+    <!-- Google Fonts & Font Awesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- html2canvas for Download Table as Image -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col antialiased selection:bg-brand-500 selection:text-white">
+
+    <!-- Header Navigation -->
+    <header class="bg-gradient-to-r from-slate-900 via-brand-900 to-slate-900 text-white shadow-lg sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div class="flex items-center space-x-3">
+                    <div class="p-2.5 bg-brand-500/20 border border-brand-500/30 rounded-xl flex items-center justify-center">
+                        <i class="fa-solid fa-truck-fast text-2xl text-brand-400"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-display font-extrabold text-2xl tracking-tight text-white flex items-center gap-2">
+                            Dropship Online
+                        </h1>
+                        <p class="text-xs text-slate-400">Sistem Kolaborasi Real-Time Multi-User</p>
+                    </div>
+                </div>
+
+                <!-- Live Status & User Info -->
+                <div class="flex items-center gap-2 flex-wrap">
+                    <div id="user-badge" onclick="changeUserName()" class="px-3 py-1.5 rounded-xl bg-slate-800/90 border border-slate-700/80 text-xs flex items-center gap-2 text-slate-300 cursor-pointer hover:bg-slate-800 hover:border-brand-500 transition-all" title="Klik untuk ubah nama anda">
+                        <i class="fa-solid fa-user-pen text-brand-400 text-sm"></i>
+                        <span id="user-display-name" class="font-semibold text-white">Pengguna</span>
+                        <i class="fa-solid fa-angle-down text-[10px] text-slate-400"></i>
+                    </div>
+                    
+                    <div id="connection-status-badge" class="px-3 py-1.5 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-semibold flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span id="status-text">Terhubung Live</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-8">
+
+        <!-- RINGKASAN & PENCARIAN -->
+        <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200/80 flex flex-col md:flex-row items-center justify-between gap-4">
+            <!-- Summary Badges -->
+            <div class="flex items-center gap-3 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
+                <div class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl flex items-center gap-3 min-w-[130px]">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-square-check"></i>
+                    </div>
+                    <div>
+                        <span class="text-[11px] font-semibold text-slate-400 block uppercase tracking-wider">Ready</span>
+                        <span id="stat-ready-count" class="text-base font-bold text-slate-800">0</span>
+                    </div>
+                </div>
+
+                <div class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl flex items-center gap-3 min-w-[130px]">
+                    <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </div>
+                    <div>
+                        <span class="text-[11px] font-semibold text-slate-400 block uppercase tracking-wider">Dikirim</span>
+                        <span id="stat-shipped-count" class="text-base font-bold text-slate-800">0</span>
+                    </div>
+                </div>
+
+                <div class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl flex items-center gap-3 min-w-[130px]">
+                    <div class="w-8 h-8 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-ban"></i>
+                    </div>
+                    <div>
+                        <span class="text-[11px] font-semibold text-slate-400 block uppercase tracking-wider">Cancel</span>
+                        <span id="stat-cancel-count" class="text-base font-bold text-slate-800">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Field -->
+            <div class="w-full md:w-72 bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex items-center gap-2 focus-within:border-brand-500 focus-within:bg-white transition-all">
+                <i class="fa-solid fa-magnifying-glass text-slate-400 text-sm ml-1"></i>
+                <input type="text" id="search-input" placeholder="Cari barang..." 
+                       class="w-full bg-transparent border-none outline-none text-slate-700 text-xs placeholder-slate-400 focus:ring-0">
+            </div>
+        </div>
+
+        <!-- TABEL UTAMA: DROPSHIP ONLINE -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
+            <!-- Header Bar -->
+            <div class="p-4 border-b border-slate-100 bg-slate-50/60 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-brand-500"></span>
+                    <h2 class="font-display font-bold text-base text-slate-800">Dropship Online</h2>
+                </div>
+                <span class="text-xs text-slate-500 font-medium hidden sm:inline flex items-center gap-1">
+                    <i class="fa-solid fa-arrows-rotate text-brand-500 animate-spin"></i> Terhubung langsung dengan tim lain
+                </span>
+            </div>
+
+            <!-- Table Active Items -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-100/90 border-b border-slate-200 text-xs font-semibold uppercase text-slate-600 tracking-wider">
+                            <th class="py-3.5 px-4 text-center w-12">NO</th>
+                            <th class="py-3.5 px-4 min-w-[220px]">NAMA BARANG</th>
+                            <th class="py-3.5 px-4 min-w-[150px] w-44">QTY</th>
+                            <th class="py-3.5 px-4 text-center w-36">Gambar Produk</th>
+                            <th class="py-3.5 px-4 text-center w-24">Redy</th>
+                            <th class="py-3.5 px-4 text-center w-28">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="active-items-tbody" class="divide-y divide-slate-100 text-sm">
+                        <!-- Dynamic Rows -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Empty State Table Utama -->
+            <div id="empty-active-state" class="hidden p-8 text-center text-slate-400">
+                <i class="fa-solid fa-box-open text-3xl mb-2 text-slate-300"></i>
+                <p class="text-sm font-medium text-slate-600">Belum ada barang di tabel utama.</p>
+                <p class="text-xs mt-0.5 text-slate-400">Tekan tombol "+ Tambah Baris" di bawah untuk memasukkan data baru.</p>
+            </div>
+
+            <!-- TOMBOL TAMBAH BARIS (KOSONGAN) -->
+            <div class="p-4 border-t border-slate-100 bg-slate-50/40 flex justify-center">
+                <button id="btn-add-row" onclick="addNewRow()" class="px-6 py-2.5 bg-brand-600 hover:bg-brand-700 active:scale-95 text-white font-semibold text-sm rounded-xl shadow-md shadow-brand-500/20 transition-all flex items-center gap-2">
+                    <span class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center font-bold text-xs">+</span>
+                    <span>Tambah Baris</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- BAGIAN FOLDER HISTORI HARIAN -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
+            <!-- Header Folder -->
+            <div class="p-4 sm:p-5 border-b border-slate-100 bg-slate-50/60">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-folder-closed text-amber-500 text-xl"></i>
+                            <h2 class="font-display font-bold text-lg text-slate-800">Folder</h2>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-0.5">Barang yang di-hapus otomatis masuk ke Folder sesuai tanggal kejadian secara real-time.</p>
+                    </div>
+
+                    <!-- Date & Action Controls -->
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <div class="flex items-center gap-1.5 bg-white border border-slate-300 rounded-xl px-3 py-1.5 shadow-sm">
+                            <i class="fa-regular fa-calendar-days text-slate-400 text-xs"></i>
+                            <input type="date" id="folder-date-select" class="bg-transparent text-xs font-medium text-slate-700 outline-none">
+                        </div>
+
+                        <!-- TOMBOL SIMPAN KE GALERI (DOWNLOAD GAMBAR) -->
+                        <button onclick="downloadFolderAsImage()" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-sm transition-all flex items-center gap-1.5">
+                            <i class="fa-solid fa-download"></i>
+                            <span>Simpan ke Galeri</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tabs Folder Harian -->
+                <div id="folder-tabs-container" class="flex items-center gap-2 mt-4 overflow-x-auto pb-1">
+                    <!-- Dynamic Tabs formatted as Folder (9 Nov 2026) -->
+                </div>
+            </div>
+
+            <!-- CONTAINER YANG AKAN DI-EXPORT KE GAMBAR GALERI -->
+            <div id="folder-export-area" class="bg-white p-2">
+                <div class="p-3 bg-slate-800 text-white rounded-t-xl flex justify-between items-center text-xs font-semibold">
+                    <span id="export-folder-title" class="flex items-center gap-2">
+                        <i class="fa-solid fa-folder text-amber-400"></i> Folder (9 Nov 2026)
+                    </span>
+                    <span class="text-slate-400">Dropship Online Report</span>
+                </div>
+                <!-- Tabel Histori Folder -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100/90 border-b border-slate-200 text-xs font-semibold uppercase text-slate-600 tracking-wider">
+                                <th class="py-3.5 px-4 text-center w-12">NO</th>
+                                <th class="py-3.5 px-4 min-w-[180px]">Nama barang</th>
+                                <th class="py-3.5 px-4 min-w-[130px] w-36">QTY</th>
+                                <th class="py-3.5 px-4 min-w-[140px] w-40">Ekspedisi</th>
+                                <th class="py-3.5 px-4 min-w-[140px] w-40">Akun</th>
+                                <th class="py-3.5 px-4 text-center w-24">Dikirim</th>
+                                <th class="py-3.5 px-4 text-center w-24">Cancel</th>
+                                <th class="py-3.5 px-4 text-center w-20 data-export-ignore">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="archived-items-tbody" class="divide-y divide-slate-100 text-sm">
+                            <!-- Dynamic Archived Rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Empty State Folder -->
+            <div id="empty-archive-state" class="hidden p-8 text-center text-slate-400">
+                <i class="fa-solid fa-folder-open text-3xl mb-2 text-slate-300"></i>
+                <p class="text-sm font-medium text-slate-600">Belum ada riwayat di folder tanggal ini.</p>
+                <p class="text-xs mt-0.5">Catatan yang dihapus pada tanggal ini akan otomatis muncul di sini.</p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal Upload Gambar Per Baris -->
+    <div id="upload-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl relative">
+            <button onclick="closeUploadModal()" class="absolute top-3.5 right-3.5 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="font-bold text-slate-800 text-base mb-1">Upload Gambar Produk</h3>
+            <p class="text-xs text-slate-400 mb-4">Pilih foto produk dari HP/Kamera untuk baris ini</p>
+            
+            <input type="hidden" id="upload-target-id">
+            
+            <div class="space-y-3">
+                <label class="w-full py-3 px-4 bg-brand-50 hover:bg-brand-100 text-brand-700 font-semibold text-xs rounded-xl cursor-pointer border border-brand-200 transition-all flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-camera text-base"></i>
+                    <span>Pilih Foto dari Galeri / Kamera</span>
+                    <input type="file" id="row-image-input" accept="image/*" class="hidden" onchange="handleRowImageUpload(event)">
+                </label>
+                <button onclick="removeRowImage()" id="btn-delete-row-img" class="w-full py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold text-xs rounded-xl transition-all hidden flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-trash-can"></i> Hapus Foto
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Preview Gambar Full Size -->
+    <div id="image-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-4 shadow-2xl relative">
+            <button onclick="closeModal()" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 id="modal-title" class="font-bold text-slate-800 text-base mb-3 pr-8 truncate">Gambar Produk</h3>
+            <div class="w-full h-80 rounded-xl bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200">
+                <img id="modal-img" src="" alt="Preview" class="max-w-full max-h-full object-contain">
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-5 right-5 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 z-50 text-sm">
+        <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+        <span id="toast-message">Pesan Notifikasi...</span>
+    </div>
+
+ <script>
+      window.__firebase_config = JSON.stringify({
+    apiKey: "AIzaSyAHtjh_fA0g7FyKA-dVtpoL1gdcUOohpQE",
+    authDomain: "dropship-tim.firebaseapp.com",
+    projectId: "dropship-tim",
+    storageBucket: "dropship-tim.firebasestorage.app",
+    messagingSenderId: "778220583309",
+    appId: "1:778220583309:web:f38f582d843e61b402e5c4",
+    measurementId: "G-H160YJBWQL"
+  });  
+ </script>
+
+    <!-- JS Files -->
+    <script type="module" src="firebase-app.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
